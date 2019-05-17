@@ -3,14 +3,46 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using SupermarketAPI.Domain.Models;
+using SupermarketAPI.Domain.Services;
+using SupermarketAPI.Resources;
+using AutoMapper;
+using SupermarketAPI.Extensions;
+
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace SupermarketAPI.Controllers {
-    public class HomeController : Controller {
-        // GET: /<controller>/
-        public IActionResult Index() {
-            return View();
+
+    [Route("/api/[Controller]")]
+    public class CategoriesController : Controller {
+
+        private readonly ICategoryService _categoryService;
+        private readonly IMapper _mapper;
+
+        public CategoriesController(ICategoryService categoryService, IMapper mapper) {
+            _categoryService = categoryService;
+            _mapper = mapper;
         }
+
+        [HttpGet]
+        public async Task<IEnumerable<CategoryResource>> getAllAsync() {
+
+            var categories = await _categoryService.ListAsync();
+            var resources = _mapper.Map<IEnumerable<Category>, IEnumerable<CategoryResource>>(categories);
+
+            return resources;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PostAsync([FromBody] SaveCategoryResource resource) {
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.GetErrorMessages());
+
+        }
+
+
     }
 }
